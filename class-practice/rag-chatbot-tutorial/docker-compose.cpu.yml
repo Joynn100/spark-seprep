@@ -27,21 +27,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # Ramalama model server
-  model-server:
-    image: quay.io/ramalama/ramalama:latest
-    container_name: rag-chatbot-model
-    ports:
-      - "${MODELSERVER_PORT:-8888}:${MODELSERVER_PORT:-8888}"
-    volumes:
-      - rag-models:/models
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${MODELSERVER_PORT:-8888}/v1/models"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 120s
-
   # RAG Chatbot App (CPU)
   app:
     build:
@@ -49,23 +34,19 @@ services:
       dockerfile: Dockerfile.cpu
     container_name: rag-chatbot-app
     environment:
-      MODEL_ENDPOINT: http://model-server:${MODELSERVER_PORT:-8888}
-      MODEL_NAME: ${MODEL_NAME:-phi4-mini-instruct}
       POSTGRES_HOST: pgvector
       POSTGRES_PORT: 5432
       POSTGRES_DB: ${POSTGRES_DB:-ragdb}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      EMBEDDING_MODEL: BAAI/bge-small-en-v1.5
+      MODEL_NAME: ${MODEL_NAME:-phi4-mini-instruct}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-BAAI/bge-small-en-v1.5}
       COLLECTION_NAME: documents
     ports:
       - "8501:8501"
     depends_on:
       pgvector:
         condition: service_healthy
-      model-server:
-        condition: service_healthy
 
 volumes:
   pgvector-data:
-  rag-models:
