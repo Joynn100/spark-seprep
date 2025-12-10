@@ -35,11 +35,6 @@ services:
       - "${MODELSERVER_PORT:-8888}:${MODELSERVER_PORT:-8888}"
     volumes:
       - rag-models:/models
-    command: >
-      ramalama --store /models serve
-      --port ${MODELSERVER_PORT:-8888}
-      --host 0.0.0.0
-      ollama://phi4-mini:latest
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${MODELSERVER_PORT:-8888}/v1/models"]
       interval: 30s
